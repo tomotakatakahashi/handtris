@@ -25,8 +25,13 @@ var render = Render.create({
     options: {width: 400, height:600}
 });
 // https://tyfkda.github.io/blog/2014/11/01/full-canvas.html
-render.canvas.style.width = window.innerHeight * 0.95 / 600 * 400 + "px";
-render.canvas.style.height = window.innerHeight * 0.95 + "px";
+if(window.innerWidth / window.innerHeight >= 600/400){
+    render.canvas.style.width = window.innerHeight * 0.95 / 600 * 400 + "px";
+    render.canvas.style.height = window.innerHeight * 0.95 + "px";
+}else{
+    render.canvas.style.width = window.innerWidth * 0.95 + "px";
+    render.canvas.style.height = window.innerWidth * 0.95 / 400 * 600 + "px";
+}
 
 var touchable = 1;
 var boundary = 2;
@@ -134,7 +139,7 @@ Events.on(engine, "collisionStart", function(e){
 		Composite.clear(world);
 		alert("Game over!");
 	    }
-	    if(collisions.length >= 20){
+	    if(collisions.length >= 10){
 		collisions.forEach(function(collision){
 		    collision.body.refToPar.bodies.forEach(function(body){
 			if(body === collision.body){
