@@ -20,7 +20,7 @@ var engine = Engine.create(),
 
 // create a renderer
 var render = Render.create({
-    element: document.body,
+    element: document.getElementById("game-aria"),
     engine: engine,
     options: {width: 400, height:600}
 });
