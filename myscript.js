@@ -30,6 +30,7 @@ var touchable = 1;
 var boundary = 2;
 var wall = 4;
 
+const minoKinds = ["O", "I", "T"];
 function createTetrimino(type){
     const x = 200, y = -100, size = 25;
     var ret = Composite.create();
@@ -39,8 +40,7 @@ function createTetrimino(type){
 	    category: touchable,
 	    mask: touchable | boundary | wall
 	},
-	frictionAir: 0.2,
-	constraints: []
+	frictionAir: 0.2
     };
     switch(type){
     case 'I':
@@ -54,17 +54,26 @@ function createTetrimino(type){
 	break;
     case 'O':
 	for(var i = 0; i < 4; i++){
-	    option.constraints = [];
 	    bodies.push(Bodies.rectangle(x + ((i % 3) ? size : 0), y + ((i & 2)? size: 0), size, size, option));
 	}
 	Composite.add(ret, bodies);
 	for(var i = 0; i < 4; i++){
 	    var constraint = Constraint.create({bodyA: bodies[i], bodyB: bodies[(i+1) % 4]});
 	    Composite.add(ret, constraint);
-	    bodies[i].constraints.push(constraint);
-	    bodies[(i+1)%4].constraints.push(constraint);
 	}
 	break;
+    case "T":
+	var dx = [0, -size, 0, +size];
+	var dy = [0, 0, -size, 0];
+	for(var i = 0; i < 4; i++){
+	    bodies.push(Bodies.rectangle(x + dx[i], y + dy[i], size, size, option));
+	}
+	Composite.add(ret, bodies);
+	for(var i = 1; i < 4; i++){
+	    Composite.add(ret, Constraint.create({bodyA: bodies[0], bodyB: bodies[i]}));
+	}
+	break;
+	    
     }
     for(var i = 0; i < 4; i++){
 	bodies[i].refToPar = ret;
@@ -91,8 +100,6 @@ World.add(engine.world, [ground, leftWall, rightWall, nowMino]);
 Events.on(engine, "collisionStart", function(e){
     var renew = false;
     e.pairs.forEach(function(pair){
-	//console.log(pair.bodyA.refToPar);
-	//console.log(pair.bodyB.refToPar);
 	var bodies = [[pair.bodyA, pair.bodyB], [pair.bodyB, pair.bodyA]];
 	bodies.forEach(function(bodies){
 	    var [bodyA, bodyB] = bodies;
@@ -107,9 +114,10 @@ Events.on(engine, "collisionStart", function(e){
 	nowMino.bodies.forEach(function(body){
 	    body.collisionFilter.category = boundary;
 	});
-	Composite.remove(nowMino, Composite.allConstraints(nowMino));
-	
-	nowMino = createTetrimino('O');
+	//Composite.remove(nowMino, Composite.allConstraints(nowMino));
+
+	var minoKind = minoKinds[Math.floor(Math.random() * 3)];
+	nowMino = createTetrimino(minoKind);
 	nowMino.bodies.forEach(function(body){
 	    minos.push(body);
 	});
@@ -127,6 +135,13 @@ Events.on(engine, "collisionStart", function(e){
 			Composite.remove(body.refToPar, body);
 		    }
 		});
+		var removedConstraints = [];
+		collision.body.refToPar.constraints.forEach(function(constraint){
+		    if(constraint.bodyA === collision.body || constraint.bodyB === collision.body){
+			removedConstraints.push(constraint);
+		    }
+		});
+		Composite.remove(collision.body.refToPar, removedConstraints);
 		for(var i = 0; i < minos.length; i++){
 		    if(minos[i] === collision.body){
 			minos.splice(i, 1);
@@ -134,41 +149,7 @@ Events.on(engine, "collisionStart", function(e){
 		    }
 		}
 
-		/*
-		World.remove(engine.world, collision.body.refToPar);
-		collision.body.refToPar.bodies.forEach(function(body){
-		    for(var i = 0; i < minos.length; i++){
-			if(minos[i] === body){
-			    minos = minos.splice(i, 1);
-			    break;
-			}
-		    }
-		});
-		*/
 	    });
-	    console.log(collisions);
-	    /*
-	    var removed = new Set();
-	    collisions.forEach(function(collision){
-		removed.add(collision.body.refToPar);
-	    });
-	    removed.forEach(function(comp){
-		World.remove(engine.world, comp);
-		Composite.clear(comp, false, false);
-	    });
-	    console.log(collisions);
-	    */
-	    /*
-	    var removed = Composite.create();
-	    collisions.forEach(function(collision){
-		collision.body.constraints.forEach(function(constraint){
-		    Composite.add(removed, constraint);
-		});
-		Composite.add(removed, collision.body);
-	    });
-	    console.log(removed);
-	    World.remove(engine.world, removed);
-*/
 	}
     }
 });
@@ -194,8 +175,5 @@ var mouse = Mouse.create(render.canvas),
 	    mask: touchable
 	}
     });
-console.log(mouseConstraint.collisionFilter);
-console.log(mouse.id);
 render.mouse = mouse;
 World.add(world, mouseConstraint);
-render.mouse = mouse;
