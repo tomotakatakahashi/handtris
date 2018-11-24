@@ -25,7 +25,7 @@ var render = Render.create({
     options: {width: 400, height:600}
 });
 // https://tyfkda.github.io/blog/2014/11/01/full-canvas.html
-if(window.innerWidth / window.innerHeight >= 600/400){
+if(window.innerWidth / window.innerHeight >= 400/600){
     render.canvas.style.width = window.innerHeight * 0.95 / 600 * 400 + "px";
     render.canvas.style.height = window.innerHeight * 0.95 + "px";
 }else{
@@ -47,7 +47,7 @@ function createTetrimino(type){
 	    category: touchable,
 	    mask: touchable | boundary | wall
 	},
-	frictionAir: 0.2
+	frictionAir: 0.1
     };
     switch(type){
     case 'I':
@@ -139,7 +139,7 @@ Events.on(engine, "collisionStart", function(e){
 		Composite.clear(world);
 		alert("Game over!");
 	    }
-	    if(collisions.length >= 10){
+	    if(collisions.length >= 15){
 		collisions.forEach(function(collision){
 		    collision.body.refToPar.bodies.forEach(function(body){
 			if(body === collision.body){
