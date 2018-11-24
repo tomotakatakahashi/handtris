@@ -90,7 +90,6 @@ var wallOption = {isStatic: true, collisionFilter: {category: wall, mask: toucha
 var leftWall = Bodies.rectangle(70, 300, 10, 600, wallOption);
 var rightWall = Bodies.rectangle(330, 300, 10, 600, wallOption);
 
-console.log(ground.collisionFilter);
 
 var minos = [];
 // add all of the bodies to the world
@@ -125,33 +124,39 @@ Events.on(engine, "collisionStart", function(e){
 	});
 	World.add(engine.world, nowMino);
 
-	var start = Vector.create(70, 570);
-	var end = Vector.create(330, 570);
-	var collisions = Query.ray(minos, start, end);
-	console.log(collisions.length);
-	console.log(minos.length);
-	if(collisions.length >= 5){
-	    collisions.forEach(function(collision){
-		collision.body.refToPar.bodies.forEach(function(body){
-		    if(body === collision.body){
-			Composite.remove(body.refToPar, body);
-		    }
-		});
-		var removedConstraints = [];
-		collision.body.refToPar.constraints.forEach(function(constraint){
-		    if(constraint.bodyA === collision.body || constraint.bodyB === collision.body){
-			removedConstraints.push(constraint);
-		    }
-		});
-		Composite.remove(collision.body.refToPar, removedConstraints);
-		for(var i = 0; i < minos.length; i++){
-		    if(minos[i] === collision.body){
-			minos.splice(i, 1);
-			break;
-		    }
-		}
+	for(var y = 570; y >= 0; y--){
+	    var start = Vector.create(70, y);
+	    var end = Vector.create(330, y);
+	    var collisions = Query.ray(minos, start, end);
 
-	    });
+	    if(collisions.length > 0 && y == 0){
+		//Engine.clear(engine);
+		Composite.clear(world);
+		alert("Game over!");
+	    }
+	    if(collisions.length >= 20){
+		collisions.forEach(function(collision){
+		    collision.body.refToPar.bodies.forEach(function(body){
+			if(body === collision.body){
+			    Composite.remove(body.refToPar, body);
+			}
+		    });
+		    var removedConstraints = [];
+		    collision.body.refToPar.constraints.forEach(function(constraint){
+			if(constraint.bodyA === collision.body || constraint.bodyB === collision.body){
+			    removedConstraints.push(constraint);
+			}
+		    });
+		    Composite.remove(collision.body.refToPar, removedConstraints);
+		    for(var i = 0; i < minos.length; i++){
+			if(minos[i] === collision.body){
+			    minos.splice(i, 1);
+			    break;
+			}
+		    }
+		    
+		});
+	    }
 	}
     }
 });
@@ -162,6 +167,7 @@ Engine.run(engine);
 
 // run the renderer
 Render.run(render);
+
 
 var mouse = Mouse.create(render.canvas),
     mouseConstraint = MouseConstraint.create(engine, {
