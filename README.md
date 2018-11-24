@@ -1,7 +1,4 @@
 # Handtris
 
-A game.
 
-<div id="game-aria" />
-<script src="matter.js"></script>
-<script src="myscript.js"></script>
+<a href="https://tomotakatakahashi.github.io/handtris/index.html"/>A game</a>(WIP).
