@@ -24,7 +24,9 @@ var render = Render.create({
     engine: engine,
     options: {width: 400, height:600}
 });
-
+// https://tyfkda.github.io/blog/2014/11/01/full-canvas.html
+render.canvas.style.width = window.innerHeight * 0.95 / 600 * 400 + "px";
+render.canvas.style.height = window.innerHeight * 0.95 + "px";
 
 var touchable = 1;
 var boundary = 2;
