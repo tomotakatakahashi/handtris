@@ -37,9 +37,10 @@ var touchable = 1;
 var boundary = 2;
 var wall = 4;
 
-const minoKinds = ["O", "I", "T"];
+const minoKinds = ["O", "I", "T", "I", "I"];
 function createTetrimino(type){
-    const x = 200, y = -100, size = 25;
+    var size = 25;
+    const x = 200, y = -size;
     var ret = Composite.create();
     var bodies = [];
     var option = {
@@ -47,7 +48,7 @@ function createTetrimino(type){
 	    category: touchable,
 	    mask: touchable | boundary | wall
 	},
-	frictionAir: 0.1
+	frictionAir: 0.1,
     };
     switch(type){
     case 'I':
@@ -103,6 +104,7 @@ nowMino.bodies.forEach(function(body){
     minos.push(body);
 });
 World.add(engine.world, [ground, leftWall, rightWall, nowMino]);
+var score = 0;
 Events.on(engine, "collisionStart", function(e){
     var renew = false;
     e.pairs.forEach(function(pair){
@@ -116,19 +118,6 @@ Events.on(engine, "collisionStart", function(e){
 	});
     });
     if(renew){
-	console.log("renew!");
-	nowMino.bodies.forEach(function(body){
-	    body.collisionFilter.category = boundary;
-	});
-	//Composite.remove(nowMino, Composite.allConstraints(nowMino));
-
-	var minoKind = minoKinds[Math.floor(Math.random() * 3)];
-	nowMino = createTetrimino(minoKind);
-	nowMino.bodies.forEach(function(body){
-	    minos.push(body);
-	});
-	World.add(engine.world, nowMino);
-
 	for(var y = 570; y >= 0; y--){
 	    var start = Vector.create(70, y);
 	    var end = Vector.create(330, y);
@@ -139,7 +128,8 @@ Events.on(engine, "collisionStart", function(e){
 		Composite.clear(world);
 		alert("Game over!");
 	    }
-	    if(collisions.length >= 15){
+	    if(collisions.length >= 17){
+		score += (y - 570) ** 2;
 		collisions.forEach(function(collision){
 		    collision.body.refToPar.bodies.forEach(function(body){
 			if(body === collision.body){
@@ -163,6 +153,19 @@ Events.on(engine, "collisionStart", function(e){
 		});
 	    }
 	}
+	nowMino.bodies.forEach(function(body){
+	    body.collisionFilter.category = boundary;
+	});
+	//Composite.remove(nowMino, Composite.allConstraints(nowMino));
+
+	var minoKind = minoKinds[Math.floor(Math.random() * minoKinds.length)];
+	nowMino = createTetrimino(minoKind);
+	nowMino.bodies.forEach(function(body){
+	    minos.push(body);
+	});
+	World.add(engine.world, nowMino);
+
+	document.getElementById("score").textContent=`score: ${score}`;
     }
 });
 
